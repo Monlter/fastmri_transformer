@@ -18,13 +18,13 @@ from tqdm import tqdm
 import fastmri
 import fastmri.data.transforms as T
 from fastmri.data import SliceDataset
-from fastmri.models import Unet
+from fastmri.models import transformer, TransformerNet
 
-UNET_FOLDER = "https://dl.fbaipublicfiles.com/fastMRI/trained_models/unet/"
+TransformerNet_FOLDER = "https://dl.fbaipublicfiles.com/fastMRI/trained_models/transformer/"
 MODEL_FNAMES = {
-    "unet_knee_sc": "knee_sc_leaderboard_state_dict.pt",
-    "unet_knee_mc": "knee_mc_leaderboard_state_dict.pt",
-    "unet_brain_mc": "brain_leaderboard_state_dict.pt",
+    "TransformerNet_knee_sc": "knee_sc_leaderboard_state_dict.pt",
+    "TransformerNet_knee_mc": "knee_mc_leaderboard_state_dict.pt",
+    "TransformerNet_brain_mc": "brain_leaderboard_state_dict.pt",
 }
 
 
@@ -48,7 +48,7 @@ def download_model(url, fname):
     progress_bar.close()
 
 
-def run_unet_model(batch, model, device):
+def run_transformer_model(batch, model, device):
     image, _, mean, std, fname, slice_num, _ = batch
 
     output = model(image.to(device).unsqueeze(1)).squeeze(1).cpu()
@@ -61,11 +61,11 @@ def run_unet_model(batch, model, device):
 
 
 def run_inference(challenge, state_dict_file, data_path, output_path, device):
-    model = Unet(in_chans=1, out_chans=1, chans=256, num_pool_layers=4, drop_prob=0.0)
+    model = TransformerNet(in_chans=1, out_chans=1, chans=256, num_pool_layers=4, drop_prob=0.0)
     # download the state_dict if we don't have it
     if state_dict_file is None:
         if not Path(MODEL_FNAMES[challenge]).exists():
-            url_root = UNET_FOLDER
+            url_root = TransformerNet_FOLDER
             download_model(url_root + MODEL_FNAMES[challenge], MODEL_FNAMES[challenge])
 
         state_dict_file = MODEL_FNAMES[challenge]
@@ -75,9 +75,9 @@ def run_inference(challenge, state_dict_file, data_path, output_path, device):
 
     # data loader setup
     if "_mc" in challenge:
-        data_transform = T.UnetDataTransform(which_challenge="multicoil")
+        data_transform = T.TransformerDataTransform(which_challenge="multicoil")
     else:
-        data_transform = T.UnetDataTransform(which_challenge="singlecoil")
+        data_transform = T.TransformerDataTransform(which_challenge="singlecoil")
 
     if "_mc" in challenge:
         dataset = SliceDataset(
@@ -100,7 +100,7 @@ def run_inference(challenge, state_dict_file, data_path, output_path, device):
 
     for batch in tqdm(dataloader, desc="Running inference"):
         with torch.no_grad():
-            output, slice_num, fname = run_unet_model(batch, model, device)
+            output, slice_num, fname = run_transformer_model(batch, model, device)
 
         outputs[fname].append((slice_num, output))
 
@@ -121,11 +121,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--challenge",
-        default="unet_knee_sc",
+        default="transformer_knee_sc",
         choices=(
-            "unet_knee_sc",
-            "unet_knee_mc",
-            "unet_brain_mc",
+            "transformer_knee_sc",
+            "transformer_knee_mc",
+            "transformer_brain_mc",
         ),
         type=str,
         help="Model to run",

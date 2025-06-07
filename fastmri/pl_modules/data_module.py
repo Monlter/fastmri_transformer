@@ -349,7 +349,7 @@ class FastMriDataModule(pl.LightningDataModule):
         parser.add_argument(
             "--challenge",
             choices=("singlecoil", "multicoil"),
-            default="singlecoil",
+            default="multicoil",
             type=str,
             help="Which challenge to preprocess for",
         )

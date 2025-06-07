@@ -634,7 +634,7 @@ class TransformerDataTransform:
         else:
             target_torch = torch.Tensor([0])
 
-        return UnetSample(
+        return TransformerSample(
             image=image,
             target=target_torch,
             mean=mean,

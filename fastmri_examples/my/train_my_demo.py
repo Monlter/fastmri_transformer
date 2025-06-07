@@ -13,8 +13,8 @@ import pytorch_lightning as pl
 
 from fastmri.data.mri_data import fetch_dir
 from fastmri.data.subsample import create_mask_for_mask_type
-from fastmri.data.transforms import UnetDataTransform,TransformerDataTransform
-from fastmri.pl_modules import FastMriDataModule, UnetModule, TransformerModule
+from fastmri.data.transforms import TransformerDataTransform
+from fastmri.pl_modules import FastMriDataModule, TransformerNetModule
 
 
 def cli_main(args):
@@ -49,7 +49,7 @@ def cli_main(args):
     # ------------
     # model
     # ------------
-    model = UnetModule(
+    model = TransformerNetModule(
         in_chans=args.in_chans,
         out_chans=args.out_chans,
         chans=args.chans,
@@ -81,14 +81,14 @@ def build_args():
     parser = ArgumentParser()
 
     # basic args
-    path_config = pathlib.Path("../../fastmri_dirs.yaml")
-    num_gpus = 2
+    path_config = pathlib.Path("./fastmri_dirs.yaml")
+    num_gpus = 1
     backend = "ddp"
     batch_size = 1 if backend == "ddp" else num_gpus
 
     # set defaults based on optional directory config
     data_path = fetch_dir("knee_path", path_config)
-    default_root_dir = fetch_dir("log_path", path_config) / "unet" / "unet_demo"
+    default_root_dir = fetch_dir("log_path", path_config) / "my" / "transformer_demo"
 
     # client arguments
     parser.add_argument(
@@ -127,7 +127,7 @@ def build_args():
     parser.set_defaults(data_path=data_path, batch_size=batch_size, test_path=None)
 
     # module config
-    parser = UnetModule.add_model_specific_args(parser)
+    parser = TransformerNetModule.add_model_specific_args(parser)
     parser.set_defaults(
         in_chans=1,  # number of input channels to U-Net
         out_chans=1,  # number of output chanenls to U-Net
