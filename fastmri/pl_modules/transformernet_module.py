@@ -10,7 +10,7 @@ from argparse import ArgumentParser
 import torch
 from torch.nn import functional as F
 
-from fastmri.models import Unet, transformernet
+from fastmri.models import Unet, TransformerNet
 
 from .mri_module import MriModule
 
@@ -29,9 +29,7 @@ class TransformerNetModule(MriModule):
         self,
         in_chans=1,
         out_chans=1,
-        chans=32,
-        num_pool_layers=4,
-        drop_prob=0.0,
+        num_layers=2,
         lr=0.001,
         lr_step_size=40,
         lr_gamma=0.1,
@@ -62,20 +60,16 @@ class TransformerNetModule(MriModule):
 
         self.in_chans = in_chans
         self.out_chans = out_chans
-        self.chans = chans
-        self.num_pool_layers = num_pool_layers
-        self.drop_prob = drop_prob
+        self.num_layers = num_layers
         self.lr = lr
         self.lr_step_size = lr_step_size
         self.lr_gamma = lr_gamma
         self.weight_decay = weight_decay
 
-        self.transformernet = transformernet(
+        self.transformernet = TransformerNet(
             in_chans=self.in_chans,
             out_chans=self.out_chans,
-            chans=self.chans,
-            num_pool_layers=self.num_pool_layers,
-            drop_prob=self.drop_prob,
+            num_layers=self.num_layers,
         )
 
     def forward(self, image):

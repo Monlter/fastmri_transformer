@@ -81,8 +81,8 @@ def build_args():
     parser = ArgumentParser()
 
     # basic args
-    path_config = pathlib.Path("../../fastmri_dirs.yaml")
-    num_gpus = 2
+    path_config = pathlib.Path("./fastmri_dirs.yaml")
+    num_gpus = 1
     backend = "ddp"
     batch_size = 1 if backend == "ddp" else num_gpus
 

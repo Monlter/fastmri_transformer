@@ -52,9 +52,7 @@ def cli_main(args):
     model = TransformerNetModule(
         in_chans=args.in_chans,
         out_chans=args.out_chans,
-        chans=args.chans,
-        num_pool_layers=args.num_pool_layers,
-        drop_prob=args.drop_prob,
+        num_layers=args.num_layers,
         lr=args.lr,
         lr_step_size=args.lr_step_size,
         lr_gamma=args.lr_gamma,
@@ -131,9 +129,7 @@ def build_args():
     parser.set_defaults(
         in_chans=1,  # number of input channels to U-Net
         out_chans=1,  # number of output chanenls to U-Net
-        chans=32,  # number of top-level U-Net channels
-        num_pool_layers=4,  # number of U-Net pooling layers
-        drop_prob=0.0,  # dropout probability
+        num_layers=4,  # number of U-Net pooling layers
         lr=0.001,  # RMSProp learning rate
         lr_step_size=40,  # epoch at which to decrease learning rate
         lr_gamma=0.1,  # extent to which to decrease learning rate

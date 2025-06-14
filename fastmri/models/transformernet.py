@@ -31,16 +31,17 @@ class TransformerNet(nn.Module):
         ff_expansion = (8, 8, 4, 4),
         reduction_ratio = (8, 4, 2, 1),
         num_layers = 2,
-        channels = 3,
+        in_chans = 1,
+        out_chans = 1,
         decoder_dim = 256,
-        num_classes = 4
+        
     ):
         super().__init__()
         dims, heads, ff_expansion, reduction_ratio, num_layers = map(partial(cast_tuple, depth = 4), (dims, heads, ff_expansion, reduction_ratio, num_layers))
         assert all([*map(lambda t: len(t) == 4, (dims, heads, ff_expansion, reduction_ratio, num_layers))]), 'only four stages are allowed, all keyword arguments must be either a single value or a tuple of 4 values'
 
         self.mit = MiT(
-            channels = channels,
+            channels = in_chans,
             dims = dims,
             heads = heads,
             ff_expansion = ff_expansion,
@@ -55,12 +56,11 @@ class TransformerNet(nn.Module):
 
         self.to_segmentation = nn.Sequential(
             nn.Conv2d(4 * decoder_dim, decoder_dim, 1),
-            nn.Conv2d(decoder_dim, num_classes, 1),
+            nn.Conv2d(decoder_dim, out_chans, 1),
         )
 
     def forward(self, x):
         layer_outputs = self.mit(x, return_layer_outputs = True)
-
         fused = [to_fused(output) for output, to_fused in zip(layer_outputs, self.to_fused)]
         fused = torch.cat(fused, dim = 1)
         return self.to_segmentation(fused)
@@ -160,7 +160,8 @@ class MiT(nn.Module):
         num_layers
     ):
         super().__init__()
-        stage_kernel_stride_pad = ((7, 4, 3), (3, 2, 1), (3, 2, 1), (3, 2, 1))
+        # stage_kernel_stride_pad = ((7, 4, 3), (3, 2, 1), (3, 2, 1), (3, 2, 1))
+        stage_kernel_stride_pad = ((7, 1, 3), (3, 2, 1), (3, 2, 1), (3, 2, 1))
 
         dims = (channels, *dims)
         dim_pairs = list(zip(dims[:-1], dims[1:]))
